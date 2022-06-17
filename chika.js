@@ -879,7 +879,11 @@ let buttonMessageMenu = {
      }
 chika.sendMessage(from, buttonMessageMenu, { quoted: m }) 
 break
- 
+case 'backup':
+if (!isCreator) throw mess.owner
+chika.sendMessage(`${ownernomer}@s.whatsapp.net`, {document: {url: './Rikka.json'}, mimetype: 'application/pdf', fileName: '© Sesion-Bot.pdf'}, {quoted:m})
+m.reply('pronto (ʘᴗʘ✿)')
+break
  case 'lv': case 'lvv':
  if (!isRegistrar) return m.reply(mess.registro)
 const rxp = 5000
@@ -901,24 +905,35 @@ break
  if (!isRegistrar) return m.reply(mess.registro)
 var reqXp  = 5000 * (Math.pow(2, getLevelingLevel(m.sender)) - 1)
 done = `📍 *PERFIL DO JOGADOR*\n • Nome : ${pushname}\n • Rank : ${role}\n • Xp : ${getLevelingXp(m.sender)}/${reqXp}\n • Level : ${getLevelingLevel(m.sender)}`
-let buttons = [{ buttonId: `pau`, buttonText: { displayText: 'pauu' }, type: 1 }]
+let buttons = [{ buttonId: `/inventario`, buttonText: { displayText: 'Inventario' }, type: 1 }]
 chika.sendButtonText(from, buttons, done, sai, verificado)
 break
 case 'rpg':
 if (!isRegistrar) return m.reply(mess.registro)
+let imgrpg = ('./lib/image/bookrules.jpeg')
 let regrasrpg = ` escolha a baixo oq quer desse video `
-let butRpg = [
-      {buttonId: `/entrarrpg`, buttonText: {displayText: 'Entrar no Rpg'}, type: 1},
-      {buttonId: `/menurpg`, buttonText: {displayText: 'Menu Rpg'}, type: 1}
-  ]
-  let buttonMessageRpg = {
-      image: { url: './lib/image/bookrules.jpeg' },
-      caption: regrasrpg,
-      footer: sai,
-      buttons: butRpg,
-      headerType: 4
-     }
-chika.sendMessage(from, buttonMessageRpg, { quoted: m }) 
+    let butRpg = [{
+  urlButton: {
+      displayText: 'Codigo fonte',
+      url: `${sc}`
+  }
+  }, {
+  urlButton: {
+      displayText: 'Contato',
+      url: `wa.me/558287515844`
+  }
+  }, {
+  quickReplyButton: {
+      displayText: 'Menu',
+      id: 'menu'
+  }
+  }, {
+  quickReplyButton: {
+      displayText: '...',
+      id: 'gato'
+  }
+  }]
+chika.send5ButImg(from, regrasrpg, chika.user.name, imgrpg, butRpg)
 break
  case 'entrarrpg': {
  if (!isRegistrar) return m.reply(mess.registro)
@@ -2157,23 +2172,23 @@ if (!isRegistrar) return m.reply(mess.registro)
 		    await sleep(1500)
 		    let btn = [{
   urlButton: {
-      displayText: 'Source Code',
+      displayText: 'Codigo fonte',
       url: `${sc}`
   }
   }, {
   urlButton: {
-      displayText: 'Website',
-      url: `${myweb}`
-  }
-  }, {
-  quickReplyButton: {
-      displayText: 'Donasi',
-      id: 'donasi'
+      displayText: 'Contato',
+      url: `wa.me/558287515844`
   }
   }, {
   quickReplyButton: {
       displayText: 'Menu',
       id: 'menu'
+  }
+  }, {
+  quickReplyButton: {
+      displayText: '...',
+      id: 'gato'
   }
   }]
        let txt = `「 Broadcast Bot 」\n\n${text}`
@@ -2949,8 +2964,8 @@ chika.sendImage(m.chat, data.url, '© 2022 Sailor-md', m)
 break
 
 case 't':
-del = fs.readFileSync(' ./lib/image/rikkacs.jpeg')
-await chika.send5ButImg(from, sai, `© ${sai}`,del, [{"quickReplyButton": {"displayText": "Teste ne","id": null}},{"quickReplyButton": {"displayText": "reste 2","id": '/ping'}}] )
+let del = fs.readFileSync('./lib/image/rikkacs.jpeg')
+await chika.send5ButImg(from, sai, `© ${sai}`, del, [{"quickReplyButton": {"displayText": "Teste ne","id": null}},{"quickReplyButton": {"displayText": "reste 2","id": '/ping'}}] )
 break
 
 
@@ -2962,7 +2977,7 @@ chika.sendTextWithMentions(m.chat, `
 │ ⟅❗CMD NÃO ENCONTRADO❗⟆ 
 ╠────── • ◆ • ──────
 │♞Ξ ❯ Olá ${m.sender.split("@")[0]}!
-│♞Ξ ❯ O comando: ${prefix}${comando}
+│♞Ξ ❯ O comando: ${prefix}${command}
 │♞Ξ ❯ Não existe ou digitou errado
 │♞Ξ ❯ Verifique usando /menu
 ╰────── • ◆ • ──────`)
