@@ -1,0 +1,28 @@
+{
+  "users": {
+    "14506731243@s.whatsapp.net": {},
+    "558288552161@s.whatsapp.net": {},
+    "558287515844@s.whatsapp.net": {}
+  },
+  "chats": {
+    "558287515844@s.whatsapp.net": {
+      "mute": false,
+      "antilink": false
+    },
+    "120363043031412856@g.us": {
+      "mute": false,
+      "antilink": false
+    }
+  },
+  "database": {},
+  "game": {},
+  "settings": {
+    "14506731243@s.whatsapp.net": {
+      "status": 0
+    }
+  },
+  "others": {
+    "vote": []
+  },
+  "sticker": {}
+}
