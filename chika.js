@@ -126,10 +126,8 @@ module.exports = chika = async (chika, m, chatUpdate, store) => {
  let chats = global.db.data.chats[m.chat]
  if (typeof chats !== 'object') global.db.data.chats[m.chat] = {}
  if (chats) {
- if (!('mute' in chats)) chats.mute = false
  if (!('antilink' in chats)) chats.antilink = false
  } else global.db.data.chats[m.chat] = {
- mute: false,
  antilink: false,
  }
  
@@ -844,6 +842,7 @@ let men = `
 ▢ ⌁ /binario
 ▢ ⌁ /dbinario
 ▢ ⌁ /rpg
+▢ ⌁ /menuaudio
 ╭━━ ⪩
 ▢ き⃟✨ Comando Grupo ✨⃟ き
 ▢ ╭═══⊷
@@ -881,7 +880,8 @@ chika.sendMessage(from, buttonMessageMenu, { quoted: m })
 break
 case 'backup':
 if (!isCreator) throw mess.owner
-chika.sendMessage(`${ownernomer}@s.whatsapp.net`, {document: {url: './Rikka.json'}, mimetype: 'application/pdf', fileName: '© Sesion-Bot.pdf'}, {quoted:m})
+chika.sendMessage(`${ownernomer}@s.whatsapp.net`, {document: {url: './Rikka.json'}, mimetype: 'application/json', fileName: '© Sesion-Bot.json'}, {quoted:m})
+await tempo(5000)
 m.reply('pronto (ʘᴗʘ✿)')
 break
  case 'lv': case 'lvv':
@@ -910,7 +910,7 @@ chika.sendButtonText(from, buttons, done, sai, verificado)
 break
 case 'rpg':
 if (!isRegistrar) return m.reply(mess.registro)
-let imgrpg = ('./lib/image/bookrules.jpeg')
+let imgrpg = fs.readFileSync('./lib/image/bookrules.jpeg')
 let regrasrpg = ` escolha a baixo oq quer desse video `
     let butRpg = [{
   urlButton: {
@@ -924,13 +924,8 @@ let regrasrpg = ` escolha a baixo oq quer desse video `
   }
   }, {
   quickReplyButton: {
-      displayText: 'Menu',
-      id: 'menu'
-  }
-  }, {
-  quickReplyButton: {
       displayText: '...',
-      id: 'gato'
+      id: '/gato'
   }
   }]
 chika.send5ButImg(from, regrasrpg, chika.user.name, imgrpg, butRpg)
@@ -1514,7 +1509,7 @@ break
  break
  case 'sair': case 'botsair': {
  if (!isCreator) throw mess.owner
- await chika.groupLeave(m.chat).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+ await chika.groupLeave(`${ownernomer}@s.whatsapp.net`).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
  }
  break
  case 'setexif': {
@@ -2219,7 +2214,7 @@ if (!wokwol.quoted) return m.reply('A mensagem que você respondeu não contém 
 await wokwol.quoted.copyNForward(m.chat, true)
  }
 break
- case 'listpc': {
+ case 'listpv': {
   let anu = await store.chats.all().filter(v => v.id.endsWith('.net')).map(v => v.id)
   let teks = `⬣ *LISTA DE BATE-PAPO PESSOAL*\n\nTotal Chat : ${anu.length} Chat\n\n`
   for (let i of anu) {
@@ -2229,7 +2224,7 @@ break
   chika.sendTextWithMentions(m.chat, teks, m)
   }
   break
- case 'listgc': {
+ case 'listgp': {
   let anu = await store.chats.all().filter(v => v.id.endsWith('@g.us')).map(v => v.id)
   let teks = `⬣ *LISTA DE GRUPO*\n\nTotal : ${anu.length} Grupos\n\n`
   for (let i of anu) {
@@ -2454,7 +2449,25 @@ if (!isRegistrar) return m.reply(mess.registro)
  chika.sendMessage(m.chat, { image: { url: random.male }, caption: `Metadinha Masculino` }, { quoted: m })
  chika.sendMessage(m.chat, { image: { url: random.female }, caption: `Metadinha Feminino` }, { quoted: m })
  }
-	    break
+break
+
+case 'menuaudio':
+if (!isRegistrar) return m.reply(mess.registro)
+let buti = `
+╭━━ ⪩
+▢ き⃟✨ Menu Audio ✨⃟ き
+▢ ╭═══⊷
+▢ ⌁ /bass (grave)
+▢ ⌁ /fast
+▢ ⌁ /slow
+▢ ⌁ /robot
+▢ ⌁ /tupai
+▢ ⌁ /nightcore
+▢ ╰═══⊷
+╰━━━ ⪨`
+let biiit = [{ buttonId: `null`, buttonText: { displayText: '😎' }, type: 1 }]
+chika.sendButtonText(from, biiit, buti, sai, verificado)
+break
 case 'bass': case 'blown': case 'deep': case 'earrape': case 'fast': case 'fat': case 'nightcore': case 'reverse': case 'robot': case 'slow': case 'smooth': case 'tupai':
  try {
  let set
