@@ -15,6 +15,7 @@ const path = require('path')
 const os = require('os')
 let yts = require( 'yt-search')
 let hx = require('hxz-api')
+const mathjs = require('mathjs')
 const crypto = require('crypto')
 const { color, bgcolor } = require('./lib/color')
 const { TiktokDownloader } = require('./lib/tiktokdl') 
@@ -2676,7 +2677,20 @@ if (!isRegistrar) return m.reply(mess.registro)
 						chika.sendImageAsSticker(m.chat, data.url, m, { packname: global.packname, author: global.author })
 					})
 					break
+case 'calc': case 'kal': {
+if (!isRegistrar) return m.reply(mess.registro)
+if (args.length < 1) return m.reply(`*Exemplo :*\n${prefix}calc 2 * 5\n\n*Lista de Números :*\n•> Vezes : *\n•> Dividir : /\n•> Mais : +\n•> Menos : -`)
+let qsd = args.join(" ")
+if (typeof mathjs.evaluate(qsd) !== 'number') {
+m.reply('Error')
+} else {
+m.reply(`\`\`\`「 CACULADORA 」\`\`\`\n\n*•> Equação :* ${qsd}\n*•> Resultado :* ${mathjs.evaluate(qsd.replace(/×/g, "*").replace(/x/g, "*").replace(/÷/g, "/"))}`)
+}
+}
+break
+
 case 'play1':
+if (!isRegistrar) return m.reply(mess.registro)
 if (args.length < 1) return reply(`Envie *${prefix}play1 seila*`)
 m.reply('Espere')
 let yut = await yts(q)
