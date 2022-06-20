@@ -30,7 +30,7 @@ global.mess = {
 ╚━━━━━━━━━━━━━━━━━━╝
 ╔━━━━━━━━━━━━━━━━━━╗
   Olá Siga As Instruções Abaixo
-  Digite: *Registrar SeuNome/Idade*
+  Digite: *login* no chat
          
    Ass: _SailorBot_
 ╚━━━━━━━━━━━━━━━━━━╝
@@ -39,7 +39,7 @@ global.mess = {
     group: 'Este comando é para grupos! ^_^',
     private: 'So respondo No pv! (◕ᴗ◕✿)',
     bot: 'Este comando ai so eu posso usar😎',
-    wait: 'Aguarde cabeça de rola doida...',
+    wait: 'Aguarde...',
     endLimit: 'Seu limit acabou 😞',
     semLimit: 'Vc não tem limit suficiente (｡•́︿•̀｡)',
     error: 'Nao consegui completar, tenta novamente ou tu pode xingar meu dono kkkkkkkk🤠!',

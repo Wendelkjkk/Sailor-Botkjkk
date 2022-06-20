@@ -139,7 +139,7 @@ async function startchika() {
                 if (anu.action == 'add') {
                     chika.sendMessage(anu.id, { image: { url: ppuser }, contextInfo: { mentionedJid: [num] }, caption: `Bem-vindo ao ${metadata.subject} @${num.split("@")[0]}` })
                 } else if (anu.action == 'remove') {
-                    chika.sendMessage(anu.id, { image: { url: ppuser }, contextInfo: { mentionedJid: [num] }, caption: `@${num.split("@")[0]} Saiu do ${metadata.subject}` })
+                    chika.sendMessage(anu.id, { image: { url: ppuser }, contextInfo: { mentionedJid: [num] }, caption: `_Usuario_ @${num.split("@")[0]}\n_*Saiu*_ _do Grupo_ _*${metadata.subject}*\n__Sayonara :)_ ` })
                 }
             }
         } catch (err) {
@@ -186,10 +186,10 @@ async function startchika() {
 	for (let i of kon) {
 	    list.push({
 	    	displayName: await chika.getName(i + '@s.whatsapp.net'),
-	    	vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${ownername}\nitem1.TEL;waid=${i}:${i}\nitem1.X-ABLabel:Ponsel\nitem2.EMAIL;type=INTERNET:${email}\nitem2.X-ABLabel:Email\nitem3.URL:${ig}\nitem3.X-ABLabel:Instagram\nitem4.ADR:;;${region};;;;\nitem4.X-ABLabel:Region\nEND:VCARD`
+	    	vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:ウェンデル\nORG:Sailor-BOT\nTEL;type=CELL;type=VOICE;waid=558287515844:+55 82 8751-5844\nEND:VCARD`
 	    })
 	}
-	chika.sendMessage(jid, { contacts: { displayName: `${list.length} Kontak`, contacts: list }, ...opts }, { quoted })
+	chika.sendMessage(jid, { contacts: { displayName: `コンタクト`, contacts: vcard }, ...opts }, { quoted })
     }
     
     chika.setStatus = (status) => {

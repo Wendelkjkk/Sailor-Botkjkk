@@ -13,9 +13,12 @@ const { exec, spawn, execSync } = require("child_process")
 const axios = require('axios')
 const path = require('path')
 const os = require('os')
+let yts = require( 'yt-search')
+let hx = require('hxz-api')
 const crypto = require('crypto')
 const { color, bgcolor } = require('./lib/color')
 const { TiktokDownloader } = require('./lib/tiktokdl') 
+let { yta, ytv, igdl, upload } = require('./lib/ytdl')
 const moment = require('moment-timezone')
 const { JSDOM } = require('jsdom')
 const speed = require('performance-now')
@@ -25,16 +28,37 @@ const primbon = new Primbon()
 const { smsg, formatp, tanggal, formatDate, getTime, isUrl, sleep, clockString, runtime, fetchJson, getBuffer, jsonformat, format, parseMention, getRandom } = require('./lib/myfunc')
 const riy = require('xfarr-api')
 const sai = "Sailor-MD"
+const _resgate = JSON.parse(fs.readFileSync('./database/datauser/resgate.json'));
 const _registro = JSON.parse(fs.readFileSync('./database/datauser/user.json')); //DADOS DAS PESSOAS REGISTRADAS 
 let _limit = JSON.parse(fs.readFileSync('./database/datauser/limit.json'));
 let _vidaNe = JSON.parse(fs.readFileSync('./database/datauser/vida.json'));
 let _coins = JSON.parse(fs.readFileSync('./database/datauser/carteira.json'));
 let _RPG = JSON.parse(fs.readFileSync('./database/datauser/inventario.json'));
 let _level = JSON.parse(fs.readFileSync('./database/datauser/leveluser.json'));
-let cassino = JSON.parse(fs.readFileSync('./database/cassino.json'))
+let antilink = JSON.parse(fs.readFileSync('./database/antilink.json'));
+let cassino = JSON.parse(fs.readFileSync('./database/cassino.json'));
 
 let vote = db.data.others.vote = []
 let prefix = global.prefix
+
+/********** FUCTION REGATE **********/
+const getResgateRandomId = () => {
+return _resgate[Math.floor(Math.random() * _resgate.length)].id
+}
+const addResgateUser = (sender, pushname, time) => {
+const obj = { id: sender, nome: pushname, horário: time }
+_resgate.push(obj)
+fs.writeFileSync('./database/datauser/resgate.json', JSON.stringify(_resgate, null, 2))
+}
+const checaresgate = (sender) => {
+let status = false
+Object.keys(_resgate).forEach((i) => {
+ if (_resgate[i].id === sender) {
+status = true
+}
+})
+return status
+}
 
 //DataUser
 let { addInventoriVida, ChecarVida, addVida, TirarVida, getVida } = require('./database/vida.js');
@@ -47,8 +71,8 @@ let { addLevelingId, addLevelingLevel, addLevelingXp, getLevelingId, getLeveling
 const getRegisteredRandomId = () => {
 return _registro[Math.floor(Math.random() * _registro.length)].id
 }
-const addRegisteredUser = (userid, sender, idade, horário, serials) => {
-const obj = { id: userid, nome: sender, idade: idade, horário: horário, serial: serials }
+const addRegisteredUser = (userid, pushname, horário, serials) => {
+const obj = { id: userid, nome: pushname, horário: horário, serial: serials }
 _registro.push(obj)
 fs.writeFileSync('./database/datauser/user.json', JSON.stringify(_registro, null, 2))
 }
@@ -94,6 +118,8 @@ module.exports = chika = async (chika, m, chatUpdate, store) => {
     	const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false
     	const isPremium = isCreator || global.premium.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender) || false
         const isRegistrar = checaregistro(m.sender)
+        const isResgate = checaresgate(m.sender)
+        const isAntiLink = m.isGroup ? antilink.includes(from) : true 
         const isRpg = checkRpg(m.sender)
         const isVida = ChecarVida(m.sender)
         const isPocao = getPotion(m.sender)
@@ -104,16 +130,16 @@ module.exports = chika = async (chika, m, chatUpdate, store) => {
 		// Selo verificado, Peguei da base do black
         const verificado = {"key": {"fromMe": false,"participant":"0@s.whatsapp.net", "remoteJid": "558287515844@g.us" }, "message": {orderMessage: {itemCount: 15,status: 4, thumbnail: fs.readFileSync(`./lib/image/chika.jpg`) ,message: `Nick : ${pushname}`,surface: 100, sellerJid: '0@s.whatsapp.net'}}}
         // Reply
-        const reply = (teks) => {
-            chika.sendMessage(m.chat, { text: teks, contextInfo:{"externalAdReply": {"title": `${botname}`,"body": `aguarde um pouco🤤 ${pushname}`, "previewType": "PHOTO","thumbnailUrl": ``,"thumbnail": thumb,"sourceUrl": `${ig}`}}}, { quoted: m })
+        const enviar = (teks) => {
+            chika.sendMessage(m.chat, { text: teks, contextInfo:{"externalAdReply": {"title": 'ウェンデル 笑' ,"body": `© Sailor-Bot`, "previewType": "PHOTO","thumbnailUrl": ``,"thumbnail": fs.readFileSync(`./lib/image/rikkacs.jpeg`) ,"sourceUrl": `https://wa.me/558287515844`}}}, { quoted: m })
         }
         // Reply 2
-        const replay = (teks) => {
-            chika.sendMessage(m.chat, { text: teks, contextInfo:{"externalAdReply": {"title": `${botname}`,"body": `Selamat ${sai} kak ${pushname}`, "previewType": "PHOTO","thumbnailUrl": ``,"thumbnail": thumb,"sourceUrl": `${myweb}`}}}, { quoted: m })
+        const saiu = (teks) => {
+            chika.sendMessage(m.chat, { text: teks, contextInfo:{"externalAdReply": {"title": 'Sayonara👋',"body": `© Saillor-Bot`, "previewType": "PHOTO","thumbnailUrl": ``,"thumbnail": fs.readFileSync(`./lib/image/potion.jpeg`) ,"sourceUrl": `https://wa.me/558287515844`}}}, { quoted: m })
         }
          const time = moment.tz('America/Sao_Paulo').format('HH:mm:ss DD/MM')
         	
-          try {
+try {
  let isNumber = x => typeof x === 'number' && !isNaN(x)
  let user = global.db.data.users[m.sender]
  if (typeof user !== 'object') global.db.data.users[m.sender] = {}
@@ -131,12 +157,56 @@ module.exports = chika = async (chika, m, chatUpdate, store) => {
  antilink: false,
  }
  
-if (selectedButton == `pv`) {
-let testoderg = `teste kkk`
-let rgrg = [
+ if (isCmd && !isRegistrar) {
+let ai = fs.readFileSync(`./lib/image/rikkacs.jpeg`)
+let aaa = `kskskskdksk`
+let rg1 = [
+      {buttonId: `Rg`, buttonText: {displayText: 'Ξ Registrar'}, type: 1}
+  ]
+  let buttonMessageRg = {
+      image: ai,
+      caption: `_...*❌Registro Obrigadorio❌*..._`,
+      footer: `Aperte no botão abaixo para se registrar.\nOu você pode mandar "login" no chat`,
+      buttons: rg1,
+      headerType: 4
+  }
+  chika.sendMessage(m.chat, buttonMessageRg, { quoted: m })
+return 
+}
+ 
+if (selectedButton == `Rg`) {
+if (isRegistrar) return  m.reply(`ola ${pushname} Você já está registrado`)
+const idseri = sayoseri(10)
+const kentod = 
+`
+╭─「 *DADOS DE REGISTRO* 」
+│
+│*Registro bem-sucedido com*
+│ID: ${idseri}
+│horário ${time}
+│Nome: ${pushname}
+│Número: wa.me/${m.sender.split('@')[0]}
+│
+│Obrigado por se registrar
+│Para usar o bot digite /menu
+│Total de usuários registrados: ${_registro.length}
+╰───────────────────
+`
+let buttonskk = [
 { buttonId: `null`, buttonText: { displayText: 'vlw bot😎🙏' }, type: 1 }
 ]
-chika.sendButtonText(m.sender, rgrg, testoderg, sai, m)
+veri = m.sender
+if (m.isGroup) {
+addRegisteredUser(m.sender, pushname, time, idseri)
+await chika.sendButtonText(m.sender, buttonskk, kentod, sai, m)
+chika.sendText(m.chat, `Registrado com sucesso, Mandei os dados no seu pv 😃`)
+//await chika.sendImage(from, buff, kentod, m)
+console.log(color('[REGISTRO]'), color(time, 'yellow'), 'Nome:', color(pushname, 'cyan'), 'id:', color(idseri, 'cyan'), 'em', color(sender || groupName))
+} else {
+addRegisteredUser(m.sender, pushname, time, idseri)
+await chika.sendButtonText(m.sender, buttonskk, kentod, sai, m)
+chika.sendText(m.chat, `Registrado com sucesso, Mandei os dados no seu pv 😃`)
+console.log(color('[REGISTRO]'), color(time, 'yellow'), 'Nome:', color(pushname, 'cyan'), 'id:', color(idseri, 'cyan'))}  
 }
 
 if (budy.includes(`restart`)) {
@@ -147,24 +217,19 @@ console.log(chalk.redBright(`REINICIANDO BOT.. by: ウェンデル`))
 m.reply('_Reiniciando..._')
 }
 
-if (budy.includes(`Registrar`)) {
+if (budy.includes(`ks2hbd9k`)) {
+if (isResgate) return  m.reply(`ola ${pushname} Você já está Resgatou esse prêmio`)
+addCoins(m.sender, 100)
+addResgateUser(m.sender, pushname, time)
+enviar('Vc Resgatou 100 coins')
+enviar(`Total de usuários resgatados: ${_resgate.length}`)
+}
+
+if (budy.includes(`login`)) {
 if (console.log == "marker was not found")
 m.reply('ocorreu um erro\n\nTente novamente. ')
 if (isRegistrar) return  m.reply(`ola ${pushname} Você já está registrado`)
-if (!q.includes('/')) return  m.reply(` Formato errado coloque assim:\n\n*login ${pushname}/15*`)
-const nome = q.substring(0, q.indexOf('/') - 0)
-const idade = q.substring(q.lastIndexOf('/') + 1)
 const idseri = sayoseri(10)
-if(isNaN(idade)) return await m.reply('A idade precisa ser um número!!')
-if (nome.length >= 15) return m.reply(`seu nome e muito grande!!!`)
-if (idade > 40) return m.reply(`Precisa ter no maximo 40 anos`)
-if (idade < 13) return m.reply(`Precisa ter no mínimo 13 anos`)
-try {
-var ppimg = await client.getProfilePicture(`${m.sender.split('@')[0]}@c.us`)
- } catch {
-var ppimg = 'https://i0.wp.com/www.gambarunik.id/wp-content/uploads/2019/06/Top-Gambar-Foto-Profil-Kosong-Lucu-Tergokil-.jpg'
- }
-buff = await getBuffer(ppimg)
 const kentod = 
 `
 ╭─「 *DADOS DE REGISTRO* 」
@@ -172,8 +237,7 @@ const kentod =
 │*Registro bem-sucedido com*
 │ID: ${idseri}
 │horário ${time}
-│Nome: ${nome}
-│Idade: ${idade}
+│Nome: ${pushname}
 │Número: wa.me/${m.sender.split('@')[0]}
 │
 │Obrigado por se registrar
@@ -186,17 +250,25 @@ let buttons = [
 ]
 veri = m.sender
 if (m.isGroup) {
-addRegisteredUser(m.sender, nome, idade, time, idseri)
+addRegisteredUser(m.sender, pushname, time, idseri)
 await chika.sendButtonText(m.sender, buttons, kentod, sai, m)
 chika.sendText(m.chat, `Registrado com sucesso, Mandei os dados no seu pv 😃`)
 //await chika.sendImage(from, buff, kentod, m)
-console.log(color('[REGISTRO]'), color(time, 'yellow'), 'Nome:', color(nome, 'cyan'), 'Idade:', color(idade, 'cyan'), 'id:', color(idseri, 'cyan'), 'em', color(sender || groupName))
+console.log(color('[REGISTRO]'), color(time, 'yellow'), 'Nome:', color(pushname, 'cyan'), 'id:', color(idseri, 'cyan'), 'em', color(sender || groupName))
 } else {
-addRegisteredUser(m.sender, nome, idade, time, idseri)
+addRegisteredUser(m.sender, pushname, time, idseri)
 await chika.sendButtonText(m.sender, buttons, kentod, sai, m)
 chika.sendText(m.chat, `Registrado com sucesso, Mandei os dados no seu pv 😃`)
-console.log(color('[REGISTRO]'), color(time, 'yellow'), 'Nome:', color(nome, 'cyan'), 'Idade:', color(idade, 'cyan'), 'id:', color(idseri, 'cyan'))}  
+console.log(color('[REGISTRO]'), color(time, 'yellow'), 'Nome:', color(pushname, 'cyan'), 'id:', color(idseri, 'cyan'))}  
 }
+
+var elit = 'Aventureiro Comum'
+			if (isPremium) {
+				elit = 'Aventureiro Pro'
+			} 
+			if (isCreator) {
+				elit = 'GM'
+			}
 
 	//function rank 
   const levelRole = getLevelingLevel(m.sender)
@@ -240,7 +312,7 @@ console.log(color('[REGISTRO]'), color(time, 'yellow'), 'Nome:', color(nome, 'cy
 │
 ╰───「 Parabéns 」`
 		   let buttons10 = [{ buttonId: `null`, buttonText: { displayText: 'Agr pai ta forte😎' }, type: 1 }]
-          chika.sendButtonText(m.chat, buttons10, lvlup, sai, verificado)
+chika.sendButtonText(m.chat, buttons10, lvlup, sai, verificado)
 
      }
  } catch (err) {
@@ -275,324 +347,9 @@ console.log(color('[REGISTRO]'), color(time, 'yellow'), 'Nome:', color(nome, 'cy
 	// Time tempo
 const tempo = async (ms) => {
 return new Promise(resolve => setTimeout(resolve, ms))}
-	
-//JOGO DO MA
-if(!m.isGroup && fs.existsSync(`./database/anagrama-${from}.json`)){
-console.log(corpo)
-let dataAnagrama = JSON.parse(fs.readFileSync(`./database/anagrama-${from}.json`))
-if(corpo.slice(0,4).toUpperCase() == dataAnagrama.original.slice(0,4).toUpperCase() && corpo.toUpperCase() != dataAnagrama.original) return m.reply('está perto')
-if(corpo.toUpperCase() == dataAnagrama.original) { chika.sendMessage(from, `parabéns ${pushname} 🥳 você ganhou o jogo\nPalavra : ${dataAnagrama.original}\nIniciando o proximo jogo em 5 segundos...`, MessageType.text, {"mentionedJid": [sender]}), fs.unlinkSync(`./database/anagrama-${from}.json`)		
-recompensa = `🎉🎉RECOMPENSA🎉🎉\nVocê ganhou 6 em *xp* e 30 em *dinhero*`
-m.reply(recompensa)
-setTimeout(async() => {
-fs.writeFileSync(`./database/anagrama-${from}.json`, `${JSON.stringify(palavrasANA[Math.floor(Math.random() * palavrasANA.length)])}`)
-let dataAnagrama2 = JSON.parse(fs.readFileSync(`./database/anagrama-${from}.json`))
-chicka.sendMessage(from, `
-╭━❒ 𝗔𝗡𝗔𝗚𝗥𝗔𝗠𝗔 🦋
-│◦➛𝗗𝗲𝘀𝗰𝘂𝗯𝗿𝗮 𝗮 𝗽𝗮𝗹𝗮𝘃𝗿𝗮
-│◦➛𝗔𝗡𝗔𝗚𝗥𝗔𝗠𝗔: ${dataAnagrama2.embaralhada}
-│◦➛𝗗𝗜𝗖𝗔: ${dataAnagrama2.dica}
-╰━━•ೋೋ•━━
-`, MessageType.text) 
-}, 5000)
-}}
-
-let palavrasANA = [
-{
-original: 'NETFLIX',
-embaralhada: 'TFLIXNE',
-dica: 'APLICATIVO'
-},
-{
-original: 'YOUTUBE',
-embaralhada: 'TUBEYOU',
-dica: 'APLICATIVO'
-},
-{
-original: 'PORTUGAL',
-embaralhada: 'TUGALPOR',
-dica: 'PAÍS'
-},
-{
-original: 'PISTOLA',
-embaralhada: 'TOPISLA',
-dica: 'OBJETO'
-},
-
-{
-original: 'CAMARÃO',
-embaralhada: 'MARÃOCA',
-dica: 'COMIDA'
-},
-{
-original: 'HIDRANTE',
-embaralhada: 'TEHDIRAN',
-dica: 'OBJETO'
-},
-{
-original: 'FOGUETE',
-embaralhada: 'TEFOGUE',
-dica: 'OBJETO'
-},
-{
-original: 'SKATE',
-embaralhada: 'TEASK',
-dica: 'OBJETO'
-},
-{
-original: 'MACACO',
-embaralhada: 'CACOMA',
-dica: 'ANIMAL'
-},
-{
-original: 'LASANHA',
-embaralhada: 'NHASALA',
-dica: 'COMIDA'
-},
-{
-original: 'PASTEL',
-embaralhada: 'PATELS',
-dica: 'COMIDA'
-},
-{
-original: 'COXINHA',
-embaralhada: 'XICONHA',
-dica: 'COMIDA'
-},
-{
-original: 'BICICLETA',
-embaralhada: 'CIBITACLE',
-dica: 'OBJETO'
-},
-{
-original: 'SASUKE',
-embaralhada: 'ESASUK',
-dica: 'PERSONAGEM'
-},
-{
-original: 'CAVALO',
-embaralhada: 'LACAVO',
-dica: 'ANIMAL'
-},
-{
-original: 'LEVI',
-embaralhada: 'EVIL',
-dica: 'PERSONAGEM'
-},
-{
-original: 'KAMAITACHI',
-embaralhada: 'TAICAMAKHI',
-dica: 'CANTOR'
-},
-{
-original: 'LUBA',
-embaralhada: 'UBAL',
-dica: 'YOUTUBER'
-},
-{
-original: 'GRÊMIO',
-embaralhada: 'OMÊGRI',
-dica: 'TIME'
-},
-{
-original: 'SATURNO',
-embaralhada: 'UTARSON',
-dica: 'PLANETA'
-},
-{
-original: 'MIKASA',
-embaralhada: 'KAMISA',
-dica: 'PERSONAGEM'
-},
-{
-original: 'LEÃO',
-embaralhada: 'OLEÃ',
-dica: 'ANIMAL'
-},
-{
-original: 'SAKURA',
-embaralhada: 'SUKARA',
-dica: 'PERSONAGEM'
-},
-{
-original: 'HADES',
-embaralhada: 'SEDAH',
-dica: 'MITOLOGIA'
-},
-{
-original: 'CORRIDA',
-embaralhada: 'ARROCID',
-dica: 'ESPORTE'
-},
-{
-original: 'ODIN',
-embaralhada: 'NODI',
-dica: 'MITOLOGIA'
-},
-{
-original: 'BICICLETA',
-embaralhada: 'CIBITACLE',
-dica: 'OBJETO'
-},
-{
-original: 'BICICLETA',
-embaralhada: 'CIBITACLE',
-dica: 'OBJETO'
-},
-{
-original: 'GUATEMALA',
-embaralhada: 'LATEMAGUA',
-dica: 'PAÍS'
-},
-{
-original: 'CEREJA',
-embaralhada: 'ECREJA',
-dica: 'FRUTA'
-},
-{
-original: 'VENEZUELA',
-embaralhada: 'ZUNEEVELA',
-dica: 'PAÍS'
-},
-{
-original: 'HISTÓRIA',
-embaralhada: 'TÓRISIAH',
-dica: 'MATÉRIA'
-},
-{
-original: 'INSTAGRAM',
-embaralhada: 'TAGRAMINS',
-dica: 'APLICATIVO'
-},
-{
-original: 'WHATSAPP',
-embaralhada: 'TSWHAAPP',
-dica: 'APLICATIVO'
-},
-{
-original: 'HIDRANTE',
-embaralhada: 'TEHDIRAN',
-dica: 'OBJETO'
-},
-{
-original: 'CELULAR',
-embaralhada: 'CELARLU',
-dica: 'OBJETO'
-},
-{
-original: 'NOTEBOOK',
-embaralhada: 'TENOBOOK',
-dica: 'OBJETO'
-},
-{
-original: 'COMPUTADOR',
-embaralhada: 'PUCOMDORTA',
-dica: 'OBJETO'
-},
-{
-original: 'LANTERNA',
-embaralhada: 'TERLANNA',
-dica: 'OBJETO'
-},
-{
-original: 'CACHORRO',
-embaralhada: 'CAORROCHO',
-dica: 'ANIMAL'
-},
-{
-original: 'DESENTUPIDOR',
-embaralhada: 'SENDETUDORPI',
-dica: 'OBJETO'
-},
-{
-original: 'TOMATE',
-embaralhada: 'ATEMOT',
-dica: 'ALIMENTO'
-},
-{
-original: 'SAXOFONE',
-embaralhada: 'ASXOEOFN',
-dica: 'INSTRUMENTO MUSICAL'
-},
-{
-original: 'CAZAQUISTÃO',
-embaralhada: 'ZAACQIUSÃOT',
-dica: 'PAÍS'
-},
-{
-original: 'CROÁCIA',
-embaralhada: 'CRCÁOAI',
-dica: 'PAÍS'
-},
-{
-original: 'HUNGRIA',
-embaralhada: 'UHGINRA',
-dica: 'PAÍS'
-},
-{
-original: 'MEGAFONE',
-embaralhada: 'MOEFGNEA',
-dica: 'OBJETO'
-},
-{
-original: 'CINTURA',
-embaralhada: 'RCIANUT',
-dica: 'CORPO HUMANO'
-},
-{
-original: 'SACOLE',
-embaralhada: 'ESCLOA',
-dica: 'NOME'
-},
-{
-original: 'MARIA',
-embaralhada: 'MRIAA',
-dica: 'NOME'
-},
-{
-original: 'PARALELEPÍPEDO',
-embaralhada: 'dolepilepapera',
-dica: 'forma geometrica'
-},
-{
-original: 'BRASIL',
-embaralhada: 'LBARSI',
-dica: 'PAÍS'
-},
-{
-original: 'GIRAFA',
-embaralhada: 'FRAGAI',
-dica: 'ANIMAL'
-},
-{
-original: 'ELEFANTE',
-embaralhada: 'FATELEEN',
-dica: 'ANIMAL'
-},
-{
-original: 'ABDÔMEN',
-embaralhada: 'MBÔDENA',
-dica: 'CORPO HUMANO'
-},
-{
-original: 'VAGNER',
-embaralhada: 'GNEVAR',
-dica: 'NOME'
-},
-{
-original: 'CORONEL',
-embaralhada: 'CR DOAO',
-dica: 'MEU CRIADOR'
-},
-{
-original: 'TANGERINA',
-embaralhada: 'RITAANGNE',
-dica: 'ALIMENTO'
-}
-]
 
 	  // Anti Link
- if (db.data.chats[m.chat].antilink) {
+ if (m.isGroup && isAntiLink) {
  if (budy.match(`chat.whatsapp.com`)) {
  m.reply(`「 ANTI LINK 」\n\n Link detectado no grupo, desculpe, você será expulso !`)
  if (!isBotAdmins) return m.reply(`que merda, eu não tenho adm 😔`)
@@ -600,13 +357,13 @@ dica: 'ALIMENTO'
  let isLinkThisGc = new RegExp(gclink, 'i')
  let isgclink = isLinkThisGc.test(m.text)
  if (isgclink) return m.reply(`verifiquei esse link e é desse grupo, entao ta de boas`)
- if (isAdmins) return m.reply(`opa vi aqui que você admkkk foi mal`)
  if (isCreator) return m.reply(`Desculpe Wendel nao come meu cu 😔😔`)
+ if (isAdmins) return m.reply(`opa vi aqui que você admkkk foi mal`)
  chika.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
  }
  }
        
- if (db.data.chats[m.chat].antilink) {
+ if (m.isGroup && isAntiLink) {
  if (budy.match(`https:`)) {
  m.reply(`「 ANTI LINK 」\n\n Link detectado no grupo, desculpe, você será expulso !`)
  if (!isBotAdmins) return m.reply(`que merda, eu não tenho adm 😔`)
@@ -614,13 +371,13 @@ dica: 'ALIMENTO'
  let isLinkThisGc = new RegExp(gclink, 'i')
  let isgclink = isLinkThisGc.test(m.text)
  if (isgclink) return m.reply(`verifiquei esse link e é desse grupo, entao ta de boas`)
- if (isAdmins) return m.reply(`opa vi aqui que você admkkk foi mal`)
  if (isCreator) return m.reply(`Desculpe Wendel nao come meu cu 😔😔`)
+ if (isAdmins) return m.reply(`opa vi aqui que você admkkk foi mal`)
  chika.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
  }
  }
  
- if (db.data.chats[m.chat].antilink) {
+ if (m.isGroup && isAntiLink) {
  if (budy.match(`http:`)) {
  m.reply(`「 ANTI LINK 」\n\n Link detectado no grupo, desculpe, você será expulso !`)
  if (!isBotAdmins) return m.reply(`que merda, eu não tenho adm 😔`)
@@ -628,8 +385,8 @@ dica: 'ALIMENTO'
  let isLinkThisGc = new RegExp(gclink, 'i')
  let isgclink = isLinkThisGc.test(m.text)
  if (isgclink) return m.reply(`verifiquei esse link e é desse grupo, entao ta de boas`)
- if (isAdmins) return m.reply(`opa vi aqui que você admkkk foi mal`)
  if (isCreator) return m.reply(`Desculpe Wendel nao come meu cu 😔😔`)
+ if (isAdmins) return m.reply(`opa vi aqui que você admkkk foi mal`)
  chika.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
  }
  }
@@ -864,6 +621,7 @@ let men = `
 ▢ ⌁ /toaudio
 ▢ ⌁ /tomp3
 ▢ ⌁ /togif
+▢ ⌁ /tourl
 ▢ ⌁ /toimg
 ▢ ⌁ /ftexto (coloca texto na figurinha)
 ▢ ╰═══⊷
@@ -880,7 +638,7 @@ chika.sendMessage(from, buttonMessageMenu, { quoted: m })
 break
 case 'backup':
 if (!isCreator) throw mess.owner
-chika.sendMessage(`${ownernomer}@s.whatsapp.net`, {document: {url: './Rikka.json'}, mimetype: 'application/json', fileName: '© Sesion-Bot.json'}, {quoted:m})
+chika.sendMessage(`${ownernomer}@s.whatsapp.net`, {document: {url: './Rikka.json'}, mimetype: 'application/json', fileName: '©Sesion-Bot.json'}, {quoted:m})
 await tempo(5000)
 m.reply('pronto (ʘᴗʘ✿)')
 break
@@ -954,7 +712,7 @@ await chika.sendButtonText(m.chat, null, boy, sai, verificado)
 break
 case 'oi': {
 if (!isRegistrar) return m.reply(mess.registro)
-if (!isRpg) return reply(mess.player)
+if (!isRpg) return m.reply(mess.player)
 if (isVivo < 1) return m.reply('Você está exausto!, tente curar usando poções') 
 addLimit(m.sender, 1)
 addCoins(m.sender, 10)
@@ -975,7 +733,7 @@ let boy = `Adicionado limit com sucesso`
 await chika.sendButtonText(m.chat, buttons, boy, sai, verificado)
 }
 break
-case 'add': {
+case 'addl': {
 if (!isCreator) throw mess.owner
 addLimit(m.sender, 8)
 let boy = `Adicionado limit com sucesso`
@@ -985,8 +743,8 @@ let boy = `Adicionado limit com sucesso`
 await chika.sendButtonText(m.chat, buttons, boy, sai, verificado)
 }
 break
-case 'inventario': {
-if (!isRpg) return reply(mess.player)
+case 'inventario': case 'mochila': {
+if (!isRpg) return m.reply(mess.player)
 if (!isRegistrar) return m.reply(mess.registro)
 var reqXp  = 5000 * (Math.pow(2, getLevelingLevel(m.sender)) - 1)
 const testet = `
@@ -994,7 +752,7 @@ const testet = `
 │ 
 │• Nome : ${pushname}
 │• Rank : ${role}
-│• Status : GM
+│• Status : ${elit}
 │• Xp : ${getLevelingXp(m.sender)}/${reqXp}
 │• Level : ${getLevelingLevel(m.sender)}
 │• Limit* : ${getLimit(m.sender)}
@@ -1011,7 +769,6 @@ const testet = `
 │• 🪙𝐂𝐨𝐢𝐧𝐬 : ${ChecarCart(m.sender)}
 │• 🐟𝐏𝐞𝐢𝐱𝐞𝐬 : ${getFish(m.sender)}
 │
-│ 
 ╰───────────────────
 `
  let jojo = [
@@ -1021,8 +778,9 @@ await chika.sendButtonText(m.chat, null, testet, sai, verificado)
 }
 break
 case 'curar':{
-if (!isRpg) return reply(mess.player)
+if (!isRpg) return m.reply(mess.player)
 if (!isRegistrar) return m.reply(mess.registro)
+ if (isVivo <= -1) return m.reply('Vc esta morto😥')
  if (!isVivo <= 0) return m.reply('Você só pode curar quando sua vida for 0')
  if (isVivo > 100) return m.reply('Seu sangue está cheio')
  if (isPocao < 1) return m.reply('Você não tem Poção') 
@@ -1037,7 +795,7 @@ if (!isRegistrar) return m.reply(mess.registro)
  break
 case 'cassino':
 if (isLimit < 1) return m.reply(mess.semLimit)
-if (!isRpg) return reply(mess.player)
+if (!isRpg) return m.reply(mess.player)
 if (!isRegistrar) return m.reply(mess.registro)
 const somtoy2 = cassino[Math.floor(Math.random() * cassino.length)]
 if ((somtoy2 == '🥑 : 🥑 : 🥑') ||(somtoy2 == '?? : 🍉 : 🍉') ||(somtoy2 == '🍓 : 🍓 : 🍓') ||(somtoy2 == '🍎 : 🍎 : 🍎') ||(somtoy2 == '🍍 : 🍍 : 🍍') ||(somtoy2 == '🥝 : 🥝 : 🥝') ||(somtoy2 == '🍑 : 🍑 : 🍑') ||(somtoy2 == '🥥 : 🥥 : 🥥') ||(somtoy2 == '🍋 : 🍋 : 🍋') ||(somtoy2 == '🍐 : 🍐 : 🍐') ||(somtoy2 == '🍌 : 🍌 : 🍌') ||(somtoy2 == '🍒 : 🍒 : 🍒') ||(somtoy2 == '🔔 : 🔔 : 🔔') ||(somtoy2 == '🍊 : 🍊 : 🍊') ||(somtoy2 == '?? : 🍇 : 🍇')) {
@@ -1067,9 +825,10 @@ m.reply(`Parabéns você ganhou *${dinherocassino}* Coins 💰🪙`)
 }
 break
 case 'minerar': case 'minerar':{
+if (isVivo <= -1) return m.reply('Vc esta morto😥')
 if (isVivo < 1) return m.reply('Você está exausto!, tente curar usando poções') 
 if (isLimit < 1) return m.reply(mess.semLimit)
-if (!isRpg) return reply(mess.player)
+if (!isRpg) return m.reply(mess.player)
 if (!isRegistrar) return m.reply(mess.registro)
   let ferro = [1,2,5,1,3,1,2,3,1,2,2,1,1,4,1,5,0,2]
   let ouro = [4,1,2,3,1,1,2,0,1,1,3,0,2]
@@ -1111,7 +870,7 @@ if (!isRegistrar) return m.reply(mess.registro)
 // LOJA
 case 'comprar': case 'buy':{
  if (!q) return  m.reply(`O que você quer comprar?\nExemplo : ${prefix + command} Pocao 2`)
- if (!isRpg) return reply(mess.player)
+ if (!isRpg) return m.reply(mess.player)
  if (!isRegistrar) return m.reply(mess.registro)
  var anu = args[1]
   if (args[0] === 'pocao'){
@@ -1173,7 +932,7 @@ let buttonMessage = {
 // VENDER
 case 'Vender': case 'vender':{
  if (!q) return  m.reply(`O que você quer vender?\nExemplo : ${prefix + command} ferro 2`)
- if (!isRpg) return reply(mess.player)
+ if (!isRpg) return m.reply(mess.player)
  if (!isRegistrar) return m.reply(mess.registro)
  var anu = args[1]
  if (args[0] === 'ferro'){
@@ -1283,7 +1042,7 @@ case 'plaquinha1':
 if (!isRegistrar) return m.reply(mess.registro)
 if (args.length < 1) return m.reply('digite o texto, exemplo: /plaquinha1 Wendel')
 teks = body.slice(12)
-if (teks.length > 25) return reply('O texto é longo, até 25 caracteres')
+if (teks.length > 25) return m.reply('O texto é longo, até 25 caracteres')
 m.reply('*Estou fazendo, se der erro tente novamente ✓*')
 buffer = await getBuffer(`https://ubbornag.sirv.com/Screenshot_20210513-151821.png?text.0.text=${teks}&text.0.position.x=-40%25&text.0.position.y=-65%25&text.0.size=30&text.0.color=000000&text.0.opacity=53&text.0.font.family=Shadows%20Into%20Light%20Two&text.0.outline.blur=15`)
 chika.sendMessage(from, { image: buffer }, {quoted: m, caption: 'Ta na mão 😈\n\n𝙳𝙾𝙽𝙾: Wendel'})
@@ -1308,7 +1067,7 @@ m.reply('ESPERE...')
 buffer = await getBuffer(`https://lculitas.sirv.com/ETw3FRnXgAI3Up_.jpg?text.0.text=${teks}&text.0.position.gravity=center&text.0.align=left&text.0.size=46&text.0.color=221b1b&text.0.opacity=47&text.0.font.family=Architects%20Daughter&text.0.background.color=783852&text.0.background.opacity=5&text.0.outline.blur=58`)
 chika.sendMessage(from, { image: buffer }, {quoted: m, caption: 'PRONTINHO AQUI ESTAR SUA PLAQUINHA 😈\n\n𝙳𝙾𝙽𝙾: Wendel kkkk'})
 break
-            					
+  					
 case 'bug':
 if (!q) return m.reply('Sem bugs?🥰')
 const bug = `${q}`
@@ -2060,7 +1819,32 @@ fs.unlinkSync(`./database/anagrama-${from}.json`)
 m.reply("Desativado com sucesso")
 }
 break
- case 'antilink': {
+case 'antilink':
+case 'antilinks':
+if (!isRegistrar) return m.reply(mess.registro)
+ if (!m.isGroup) throw mess.group
+ if (!isBotAdmins) throw mess.botAdmin
+ if (!isAdmins) throw mess.admin
+if (args[0] === 'on') {
+if (isAntiLink) return enviar('*[❗] ja esta ativado amigo...*')
+antilink.push(from)
+fs.writeFileSync('./database/antilink.json', JSON.stringify(antilink))
+m.reply(`Antilink Ativado !`)
+} else if (args[0] === 'off') {
+let position = antilink.indexOf(antilink.find((x) => x === from))
+if (position === -1) return enviar(`${command} não estava ativo antes`)
+antilink.splice(position, 1)
+fs.writeFileSync('./database/antilink.json', JSON.stringify(antilink))
+m.reply(`Antilink Desativado!`)
+} else {
+let buttonns = [
+  { buttonId: '/antilink on', buttonText: { displayText: 'On' }, type: 1 },
+  { buttonId: '/antilink off', buttonText: { displayText: 'Off' }, type: 1 }
+     ]
+     await chika.sendButtonText(m.chat, buttonns, `Sistema de Antilink 🤨`, sai, m)
+ }
+break
+/* case 'antilink': {
  if (!isRegistrar) return m.reply(mess.registro)
  if (!m.isGroup) throw mess.group
  if (!isBotAdmins) throw mess.botAdmin
@@ -2074,14 +1858,14 @@ break
  db.data.chats[m.chat].antilink = false
  m.reply(`Antilink Desativado!`)
  } else {
-  let buttons = [
+  let buttonns = [
   { buttonId: '/antilink on', buttonText: { displayText: 'On' }, type: 1 },
   { buttonId: '/antilink off', buttonText: { displayText: 'Off' }, type: 1 }
      ]
-     await chika.sendButtonText(m.chat, buttons, `Sistema de Antilink 🤨`, sai, m)
+     await chika.sendButtonText(m.chat, buttonns, `Sistema de Antilink 🤨`, sai, m)
  }
   }
-
+break
 case 'a':{
 if (!m.isGroup) throw mess.group
  if (!isBotAdmins) throw mess.botAdmin
@@ -2103,8 +1887,7 @@ m.reply(`${chika.user.name} desativou o antiflod neste grupo !`)
      ]
      await chika.sendButtonText(m.chat, buttons, `anti flod 😳😔🤨🥳😥❤️🍐🥳😎❤️`, sai, m)
  }
-  }
-break
+  }*/
  case 'linkgrupo': case 'linkgc': {
  if (!isRegistrar) return m.reply(mess.registro)
  if (!m.isGroup) throw mess.group
@@ -2243,7 +2026,6 @@ break
  case 'figura': case 'f': case 'figu': case 'figurinha': {
 if (!isRegistrar) return m.reply(mess.registro)
  if (!quoted) throw `Marque vídeo/imagem com legenda ${prefix + command}`
- m.reply(mess.wait)
      if (/image/.test(mime)) {
  let media = await quoted.download()
  let encmedia = await chika.sendImageAsSticker(m.chat, media, m, { packname: global.packname, author: `by: ${pushname}` })
@@ -2303,7 +2085,6 @@ break
  if (!isRegistrar) return m.reply(mess.registro)
  if (!quoted) throw 'Marque a figurinha'
  if (!/webp/.test(mime)) throw `Marque a figurinha com legenda *${prefix + command}*`
- m.reply(mess.wait)
  let media = await chika.downloadAndSaveMediaMessage(quoted)
  let ran = await getRandom('.png')
  exec(`ffmpeg -i ${media} ${ran}`, (err) => {
@@ -2769,7 +2550,7 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
  }
  }
  break
- case 'owner': case 'dono': {
+ case 'gostoso': case 'dono': {
  chika.sendContact(m.chat, global.owner, m)
  }
  break
@@ -2811,7 +2592,7 @@ const sendm = chika.sendMessage(from, templateMessage)
 break
 
 case 'dado': //Jogos
-if (!isRegistrar) return reply(mess.registro)//PEDI O REGISTRO
+if (!isRegistrar) return m.reply(mess.registro)//PEDI O REGISTRO
 const dadus = ["1","2","3","4","5","6"]
 dadu = dadus[Math.floor(Math.random() * dadus.length)]
 dador = fs.readFileSync('./lib/image/dados/'+dadu+'.webp')
@@ -2819,7 +2600,7 @@ chika.sendImageAsSticker(m.chat, dador, m, { packname: global.packname, author: 
 break
 
 case 'roleta': //Jogos
-if (!isRegistrar) return reply(mess.registro)//PEDI O REGISTRO
+if (!isRegistrar) return m.reply(mess.registro)//PEDI O REGISTRO
 const tiro = ["vazio","vazio","vazio","vazio","vazio","vazio","vazio","vazio","pow","pow"]
 const figr = ["pattta1","pattta2","pattta3"]
 tpa = tiro[Math.floor(Math.random() * (tiro.length))]
@@ -2844,7 +2625,7 @@ chika.sendButtonText(m.chat, tam1, morte, sai, m)
 break
 
 case 'caracoroa': //Jogos
-if (!isRegistrar) return reply(mess.registro)//PEDI O REGISTRO
+if (!isRegistrar) return m.reply(mess.registro)//PEDI O REGISTRO
 const cara = fs.readFileSync('./lib/image/cara/cara.webp');
 const coroa = fs.readFileSync('./lib/image/cara/coroa.webp');
 cararo = ["cara", "coroa"]
@@ -2873,7 +2654,7 @@ if (!isRegistrar) return m.reply(mess.registro)
      break
 case 'coffe': case 'cafe': {
 if (!isRegistrar) return m.reply(mess.registro)
-     reply(mess.wait)
+     m.reply(mess.wait)
      let buttons = [
       {buttonId: `coffe`, buttonText: {displayText: 'Next Image'}, type: 1}
   ]
@@ -2895,11 +2676,83 @@ if (!isRegistrar) return m.reply(mess.registro)
 						chika.sendImageAsSticker(m.chat, data.url, m, { packname: global.packname, author: global.author })
 					})
 					break
+case 'play1':
+if (args.length < 1) return reply(`Envie *${prefix}play1 seila*`)
+m.reply('Espere')
+let yut = await yts(q)
+yta(yut.videos[0].url)   
+.then(async(res) => {
+var { thumb, title, filesizeF, filesize } = res
+var capti = `𝗬𝗢𝗨𝗧𝗨𝗕𝗘 𝗣𝗟𝗔𝗬🍁\n•💬 Judul : ${yut.all[0].title}\n•🎥 ID Video : ${yut.all[0].videoId}\n•⏰️ Diupload Pada : ${yut.all[0].ago}\n•👁️️ Views : ${yut.all[0].views}\n•▶️ Durasi : ${yut.all[0].timestamp}\n•📍 Channel : ${yut.all[0].author.name}\n•🔗 Link Channel : ${yut.all[0].author.url}\n•⚡ Link Video : ${yut.videos[0].url}`
+ya = await getBuffer(thumb)
+let buttonsplay = [
+{buttonId: `.ytmp4 ${yut.all[0].url}`, buttonText: {displayText: 'VIDEO'}, type: 1},
+{buttonId: `.ytmp3 ${yut.all[0].url}`, buttonText: {displayText: 'AUDIO'}, type: 1}
+]
+let buttonMessageplay = {
+image: ya,
+caption: capti,
+footer: "© Sailor-Bot",
+buttons: buttonsplay,
+headerType: 4,
+}
+chika.sendMessage(from, buttonMessageplay, {quoted:m})
+}).  
+break
+
+case 'ytmp4':
+if (args.length < 1) return reply('Link?')     
+m.reply(mess.wait)
+get_result = await fetchJson(`http://hadi-api.herokuapp.com/api/ytvideo?url=${q}`)
+get_result = get_result.result
+ini_vid = await getBuffer(get_result.download_video)
+await chika.sendMessage(from, ini_vid, video, { mimetype: 'video/mp4', filename: `${get_result.title}.mp4`, quoted: m })
+break
+    case 'ytmp3':
+if (args.length < 1) return reply('Link?')         
+m.reply(mess.wait)      
+get_result = await fetchJson(`http://hadi-api.herokuapp.com/api/ytaudio?url=${q}`)
+get_result = get_result.result
+ini_vid = await getBuffer(get_result.download_audio)
+await chika.sendMessage(from, ini_vid, audio, { mimetype: 'audio/mp4', filename: `${get_result.title}.mp3`, quoted: m})
+break
+
+case 'play': case 'yt': case 'youtube':{
+if (!isRegistrar) return m.reply(mess.registro)
+if (!args[0]) return m.reply('link?')
+m.reply(mess.wait)
+try {
+hx.youtube(args[0]).then(async(res) => {
+textyt = `*── 「 YOUTUBE DOWNLOAD 」 ──*
+
+❏ Title : ${res.title}
+❏ Size : ${res.size}
+❏ Quality : ${res.quality}
+
+_Selecione vídeo ou áudio e espere um pouco_`
+let buttonskj = [
+{buttonId: `.ytmp4 ${res.link}`, buttonText: {displayText: 'VIDEO'}, type: 1},
+{buttonId: `.ytmp3 ${res.link}`, buttonText: {displayText: 'AUDIO'}, type: 1}
+]
+let buttonMessagekj = {
+image: {url:res.thumb},
+caption: textyt,
+footer: "© Sailor-Bot",
+buttons: buttonskj,
+headerType: 4,
+}
+chika.sendMessage(from, buttonMessagekj, {quoted:m})
+}).catch(_ => _)
+} catch {
+m.reply("Linknya Error!")
+}
+}
+break
 
 case 'tiktok':
 if (!isRegistrar) return m.reply(mess.registro)
 if (!q) return m.reply('cade o link?')
-if (!q.includes('tiktok')) return reply('Isso não é um link do tiktok!')
+if (!q.includes('tiktok')) return m.reply('Isso não é um link do tiktok!')
 let tiktom = ` escolha a baixo oq quer desse video ${q}`
 let buttiktok = [
       {buttonId: `/ttkaudio ${q}`, buttonText: {displayText: 'Audio'}, type: 1},
@@ -2910,8 +2763,8 @@ break
 
 case 'ttkaudio':
 case 'tiktokmusic':{
-  if (!q) return reply('cade o link?')
-  if (!q.includes('tiktok')) return reply('Isso não é um link do tiktok!')
+  if (!q) return m.reply('cade o link?')
+  if (!q.includes('tiktok')) return m.reply('Isso não é um link do tiktok!')
    const musim_rambutan = await TiktokDownloader(`${q}`).catch(e => {
  m.reply(err) 
 } )
@@ -2922,9 +2775,9 @@ case 'tiktokmusic':{
  break
 
   case 'toktok':{
-  if (!q) return reply('Link?')
+  if (!q) return m.reply('Link?')
   m.reply(mess.wait)
-  if (!q.includes('tiktok')) return reply('Isso não é um link do tiktok!')
+  if (!q.includes('tiktok')) return m.reply('Isso não é um link do tiktok!')
    const musim_rambutan = await TiktokDownloader(`${q}`).catch(e => {
  m.reply(err) 
 } )
@@ -2934,9 +2787,9 @@ case 'tiktokmusic':{
    }
   break
   case 'ttksem':{
-  if (!q) return reply('link?')
+  if (!q) return m.reply('link?')
   m.reply(mess.wait)
-  if (!q.includes('tiktok')) return reply('Isso não é um link do tiktok!')
+  if (!q.includes('tiktok')) return m.reply('Isso não é um link do tiktok!')
    const musim_rambutan = await TiktokDownloader(`${q}`).catch(e => {
  m.reply(err) 
 } )
@@ -2989,7 +2842,7 @@ chika.sendTextWithMentions(m.chat, `
 ╭────── • ◆ • ──────
 │ ⟅❗CMD NÃO ENCONTRADO❗⟆ 
 ╠────── • ◆ • ──────
-│♞Ξ ❯ Olá ${m.sender.split("@")[0]}!
+│♞Ξ ❯ Olá @${m.sender.split("@")[0]}!
 │♞Ξ ❯ O comando: ${prefix}${command}
 │♞Ξ ❯ Não existe ou digitou errado
 │♞Ξ ❯ Verifique usando /menu
