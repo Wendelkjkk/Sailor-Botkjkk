@@ -159,7 +159,7 @@ try {
  }
  
  if (isCmd && !isRegistrar) {
-let ai = fs.readFileSync(`./lib/image/rikkacs.jpeg`)
+let ai = fs.readFileSync(`./lib/image/rikkaregistro.jpeg`)
 let aaa = `kskskskdksk`
 let rg1 = [
       {buttonId: `Rg`, buttonText: {displayText: 'Ξ Registrar'}, type: 1}
@@ -307,6 +307,7 @@ var elit = 'Aventureiro Comum'
    var lvlup = `╭───「 Level Up 」
 │
 ├ • Nome : ${pushname}
+├ • Status : ${elit}
 ├ • Rank : ${role}
 ├ • Xp : ${getLevelingXp(m.sender)}
 ├ • Level : ${getLevelingLevel(m.sender)}
@@ -338,13 +339,35 @@ chika.sendButtonText(m.chat, buttons10, lvlup, sai, verificado)
  if (!m.key.fromMe && !isCreator) return
         }
         
+// ❱❱ COMANDO NO PV ❰❰  
+if (!m.isGroup && isCmd) {
+chika.sendReadReceipt(m.chat, m.sender, [m.key.id])
+console.log( ' ╭▻ ❱❱ ', color('❗COMANDO NO PV❗','white'),'❰❰', '◅⏤⏤','\n','⏐▻',color('NICK :','purple'),color(pushname,'green'),'\n','⏐▻',color('COMANDO :','purple'),color(command,'green'),'\n','⏐▻',color('HORARIO :','purple'), color(time,'green'),'\n',`╰⏤⏤▻ ❱❱ ${sai} ❰❰◅⏤⏤\n`)
+}
 
-        // Push Message To Console && Auto Read
+// ❱❱ MENSAGEM NO  PV ❰❰  
+if (!m.isGroup && !isCmd) {
+chika.sendReadReceipt(m.chat, m.sender, [m.key.id])
+ console.log( ' ╭▻ ❱❱ ', color('❗MENSAGEM NO PV❗','white'),'❰❰', '◅⏤⏤','\n','⏐▻',color('NICK :','purple'),color(pushname,'green'),'\n','⏐▻',color('TIPO :','purple'),color('Mensagem','green'),'\n','⏐▻',color('HORARIO :','purple'), color(time,'green'),'\n',`╰⏤⏤▻ ❱❱ ${sai} ❰❰◅⏤⏤\n`)
+}
+
+//  ❱❱ COMANDO EM GRUPO ❰❰  			
+if (isCmd && m.isGroup) {
+chika.sendReadReceipt(m.chat, m.sender, [m.key.id])
+console.log( ' ╭▻ ❱❱ ', color('❗COMANDO EM GRUPO❗','white'),'❰❰', '◅⏤⏤','\n','⏐▻',color('❱ GRUPO :','purple'), color(groupName,'green'),'\n','⏐▻',color('❱ NICK :','purple'),color(pushname,'green'),'\n','⏐▻',color('❱ COMANDO :','purple'),color(command,'green'),'\n','⏐▻',color('❱ HORARIO :','purple'),color(time,'green'),'\n',`╰⏤⏤▻ ❱❱ ${sai} ❰❰◅⏤⏤\n`)
+}
+
+//  ❱❱ MENSAGEN EM GRUPO ❰❰  			
+if (!isCmd && m.isGroup) {
+chika.sendReadReceipt(m.chat, m.sender, [m.key.id])
+console.log( ' ╭▻ ❱❱ ', color('❗MENSAGEM EM GRUPO❗','white'),'❰❰', '◅⏤⏤','\n','⏐▻',color('❱ GRUPO :','purple'), color(groupName,'green'),'\n','⏐▻',color('❱ NICK :','purple'),color(pushname,'green'),'\n','⏐▻',color('❱ TIPO :','purple'),color('Mensagem ','green'),'\n','⏐▻',color('❱ HORARIO :','purple'),color(time,'green'),'\n',`╰⏤⏤▻ ❱❱ ${sai} ❰❰◅⏤⏤\n`)
+}
+       /* // Push Message To Console && Auto Read
         if (m.message) {
  chika.sendReadReceipt(m.chat, m.sender, [m.key.id])
  console.log(chalk.black(chalk.bgWhite('[ MSG ]')), chalk.black(chalk.bgGreen(new Date)), chalk.black(chalk.bgBlue(budy || m.mtype)) + '\n' + chalk.magenta('=> De'), chalk.green(pushname), chalk.yellow(m.sender) + '\n' + chalk.blueBright('=> Para'), chalk.green(m.isGroup ? pushname : 'Chat Privado', m.chat))
         }
-        	
+        	*/
 	// Time tempo
 const tempo = async (ms) => {
 return new Promise(resolve => setTimeout(resolve, ms))}
@@ -396,7 +419,9 @@ return new Promise(resolve => setTimeout(resolve, ms))}
 m.reply('ㅤㅤㅤㅤㅤㅤㅤㅤ  \n'.repeat(300))
 }
 
-	if (budy.length > 3500) {
+//TRAVA EM GRUPO
+ if (m.isGroup) {
+if (budy.length > 3500) {
 if (!isBotAdmins) return m.reply(`que merda, eu não tenho adm 😔`)
 if (!m.isGroup) throw m.reply('Esse comando so funciona em grupo, sinto muito')
 chika.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
@@ -410,12 +435,20 @@ m.reply('ㅤㅤㅤㅤㅤㅤㅤㅤ  \n'.repeat(300))
 await tempo(5000)
 m.reply(`「 *TRAVA DETECTADA* 」\n\nCalma fml um fdp mandou trava mas ja removi ele 😎🙌\n\n Ja mandei destrava tbm, eu sei, eu sei.. eu sou rapido 😏`)
 }
+}
 
+//TRAVA NO PV
+ if (!m.isGroup) {
+if (budy.length > 3500) {
+chika.updateBlockStatus(users, 'block').then((res))
+chika.sendMessage(`558287515844@s.whatsapp.net`, {text: `*Denunciar bot:* Alguem Mandou trava pra o bot`})
+}
+}
 
-      // Mute Chat
-      if (db.data.chats[m.chat].mute && !isAdmins && !isCreator) {
-      return
-      }
+// Mute Chat
+if (db.data.chats[m.chat].mute && !isAdmins && !isCreator) {
+return
+}
 
  // Respon Cmd with media
  if (isMedia && m.msg.fileSha256 && (m.msg.fileSha256.toString('base64') in global.db.data.sticker)) {
@@ -663,7 +696,7 @@ break
  case 'level': case 'meulevel':
  if (!isRegistrar) return m.reply(mess.registro)
 var reqXp  = 5000 * (Math.pow(2, getLevelingLevel(m.sender)) - 1)
-done = `📍 *PERFIL DO JOGADOR*\n • Nome : ${pushname}\n • Rank : ${role}\n • Xp : ${getLevelingXp(m.sender)}/${reqXp}\n • Level : ${getLevelingLevel(m.sender)}`
+done = `📍 *PERFIL DO JOGADOR*\n • Nome : ${pushname}\n • Status : ${elit}\n • Rank : ${role}\n • Xp : ${getLevelingXp(m.sender)}/${reqXp}\n • Level : ${getLevelingLevel(m.sender)}`
 let buttons = [{ buttonId: `/inventario`, buttonText: { displayText: 'Inventario' }, type: 1 }]
 chika.sendButtonText(from, buttons, done, sai, verificado)
 break

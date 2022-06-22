@@ -4,7 +4,7 @@ const chalk = require('chalk')
 
 // geral
 global.prefix = '/'
-global.owner = ['558287515844','a','a']
+global.owner = ['558287515844','558699760561','a']
 global.premium = ['558287515844']
 global.ownernomer = '558287515844'
 global.ownername = 'ウェンデル'
